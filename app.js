@@ -84,7 +84,7 @@ app.post("/login", async (request, response) => {
   } else {
     const isValidPassword = bcrypt.compare(password, isValidUser.password);
     if (isValidPassword) {
-      const payload = username;
+      const payload = { username, user_id: isValidUser.user_id };
       const jwtToken = jwt.sign(payload, "naveenkrish24");
       response.send({ jwtToken });
     } else {
@@ -109,7 +109,8 @@ const jwtAuthentication = (request, response, next) => {
         response.status(401);
         response.send("Invalid JWT Token");
       } else {
-        console.log(payload);
+        request.username = payload.username;
+        request.userId = payload.user_id;
         next();
       }
     });
@@ -160,7 +161,9 @@ app.get("/user/tweets/feed", jwtAuthentication, async (request, response) => {
 // API-4
 
 app.get("/user/following", jwtAuthentication, async (request, response) => {
-  const { username } = request.body;
+  const { username, userId } = request;
+  console.log(username);
+  console.log(userId);
 
   const followingPeoples = await getFollowingPeoples(username);
   const followersSqlQuery = `
